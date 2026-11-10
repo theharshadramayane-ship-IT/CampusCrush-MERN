@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 
-// @desc    Register user
+// Signup
 const signup = async (req, res) => {
   try {
     const { name, email, password, gender, branch, age } = req.body;
@@ -11,9 +11,7 @@ const signup = async (req, res) => {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    const user = await User.create({
-      name, email, password, gender, branch, age
-    });
+    const user = await User.create({ name, email, password, gender, branch, age });
 
     res.status(201).json({
       success: true,
@@ -28,22 +26,17 @@ const signup = async (req, res) => {
   }
 };
 
-// @desc    Login user
+// Login
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ error: 'User not found' });
-    }
+    if (!user) return res.status(400).json({ error: 'User not found' });
 
     const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid password' });
-    }
+    if (!isMatch) return res.status(400).json({ error: 'Invalid password' });
 
-    // Update online status
     user.online = true;
     await user.save();
 
@@ -61,4 +54,23 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { signup, login };
+// Fake Users Add (Testing ke liye)
+const addFakeUsers = async (req, res) => {
+  try {
+    const fakeUsers = [
+      { name: 'Priya Sharma', email: 'priya@test.com', password: '123456', gender: 'Girl', branch: 'CS', age: 21, bio: 'Coding enthusiast' },
+      { name: 'Rahul Verma', email: 'rahul@test.com', password: '123456', gender: 'Boy', branch: 'ECE', age: 22, bio: 'Football player' },
+      { name: 'Anjali Nair', email: 'anjali@test.com', password: '123456', gender: 'Girl', branch: 'IT', age: 20, bio: 'Nature lover' }
+    ];
+
+    for (const u of fakeUsers) {
+      const exists = await User.findOne({ email: u.email });
+      if (!exists) await User.create(u);
+    }
+    res.json({ message: 'Fake users added!' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { signup, login, addFakeUsers };

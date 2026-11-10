@@ -12,7 +12,7 @@ const Signup = () => {
     e.preventDefault();
     const res = await signup(formData);
     if (res.success) {
-      navigate('/discover');
+      navigate('/discover'); // 🔥 Yahan navigate use kiya hai
     } else {
       setError(res.error);
     }
