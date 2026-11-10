@@ -7,7 +7,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [events, setEvents] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [analytics, setAnalytics] = useState({ totalUsers: 0, totalMessages: 0, totalMatches: 0 });
+  const [analytics, setAnalytics] = useState({ totalUsers: 0, totalMessages: 0, totalEvents: 0 });
   const [eventData, setEventData] = useState({ title: '', date: '', venue: '', image: '🎉' });
   const navigate = useNavigate();
 
@@ -35,103 +35,84 @@ const AdminDashboard = () => {
     fetchData();
   }, [token, navigate]);
 
-  // ---------------- ACTIONS ----------------
   const handleToggleBlock = async (userId) => {
-    try {
-      await axios.put(`http://localhost:5000/api/admin/block/${userId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setUsers(users.map(u => u._id === userId ? { ...u, isBlocked: !u.isBlocked } : u));
-    } catch (err) { alert('Failed'); }
+    await axios.put(`http://localhost:5000/api/admin/block/${userId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    setUsers(users.map(u => u._id === userId ? { ...u, isBlocked: !u.isBlocked } : u));
   };
 
-  const handleToggleMute = async (userId) => {
-    try {
-      await axios.put(`http://localhost:5000/api/admin/mute/${userId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setUsers(users.map(u => u._id === userId ? { ...u, isChatMuted: !u.isChatMuted } : u));
-    } catch (err) { alert('Failed'); }
+  const handleRoleAction = async (userId, action) => {
+    await axios.post('http://localhost:5000/api/admin/role-request', { userId, action }, { headers: { Authorization: `Bearer ${token}` } });
+    alert(`Role ${action}d!`);
+    window.location.reload();
   };
 
   const handleAddEvent = async (e) => {
     e.preventDefault();
-    try {
-      const res = await axios.post('http://localhost:5000/api/events', eventData, { headers: { Authorization: `Bearer ${token}` } });
-      setEvents([res.data, ...events]);
-      setEventData({ title: '', date: '', venue: '', image: '🎉' });
-      alert('✅ Event Added!');
-    } catch (err) { alert('Failed'); }
+    const res = await axios.post('http://localhost:5000/api/events', eventData, { headers: { Authorization: `Bearer ${token}` } });
+    setEvents([res.data, ...events]);
+    setEventData({ title: '', date: '', venue: '', image: '🎉' });
   };
 
   const handleDeleteEvent = async (id) => {
-    if (window.confirm('Delete this event?')) {
+    if (window.confirm('Delete?')) {
       await axios.delete(`http://localhost:5000/api/events/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setEvents(events.filter(e => e._id !== id));
     }
   };
 
   const handleDeleteMessage = async (id) => {
-    if (window.confirm('Delete this message?')) {
+    if (window.confirm('Delete message?')) {
       await axios.delete(`http://localhost:5000/api/admin/messages/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setMessages(messages.filter(m => m._id !== id));
     }
   };
 
-  // ---------------- RENDER ----------------
+  // 🔥 NAYA FUNCTION: Coordinator Assign Karna
+  const handleAssignCoordinator = async (eventId, userId) => {
+    if (!userId) return;
+    try {
+      await axios.post('http://localhost:5000/api/admin/assign-coordinator', { eventId, userId }, { headers: { Authorization: `Bearer ${token}` } });
+      alert('✅ Coordinator Assigned successfully!');
+    } catch (err) { 
+      alert('Failed to assign coordinator'); 
+    }
+  };
+
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', paddingTop: '80px', paddingBottom: '50px' }}>
-      
-      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
         <h1>👑 Admin Dashboard</h1>
         <button onClick={() => { localStorage.removeItem('adminToken'); navigate('/admin-login'); }} style={styles.logoutBtn}>Logout</button>
       </div>
 
-      {/* Tabs */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
-        {['overview', 'students', 'events', 'chat'].map(tab => (
-          <button 
-            key={tab} 
-            onClick={() => setActiveTab(tab)}
-            style={{...styles.tabBtn, ...(activeTab === tab ? styles.activeTab : {})}}
-          >
+        {['overview', 'students', 'events', 'chat', 'roles'].map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)} style={{...styles.tabBtn, ...(activeTab === tab ? styles.activeTab : {})}}>
             {tab.toUpperCase()}
           </button>
         ))}
       </div>
 
-      {/* 🔥 1. ANALYTICS (Overview Tab) */}
       {activeTab === 'overview' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
           <div style={styles.statCard}><h2 style={{ color: '#ff2d75' }}>{analytics.totalUsers}</h2><p>Total Users</p></div>
-          <div style={styles.statCard}><h2 style={{ color: '#4caf50' }}>{analytics.totalMessages}</h2><p>Total Chat Messages</p></div>
-          <div style={styles.statCard}><h2 style={{ color: '#ffb300' }}>{analytics.totalMatches}</h2><p>Total Matches</p></div>
+          <div style={styles.statCard}><h2 style={{ color: '#4caf50' }}>{analytics.totalMessages}</h2><p>Total Messages</p></div>
+          <div style={styles.statCard}><h2 style={{ color: '#ffb300' }}>{analytics.totalEvents}</h2><p>Total Events</p></div>
         </div>
       )}
 
-      {/* 🔥 2. STUDENT MANAGEMENT (Mute Feature added) */}
       {activeTab === 'students' && (
         <div style={styles.section}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #3a2e4d', color: '#b8a9e6' }}>
-                <th style={{ padding: '10px' }}>Name</th>
-                <th style={{ padding: '10px' }}>Status</th>
-                <th style={{ padding: '10px' }}>Actions</th>
-              </tr>
-            </thead>
+            <thead><tr style={{ borderBottom: '1px solid #3a2e4d', color: '#b8a9e6' }}><th style={{ padding: '10px' }}>Name</th><th>Role</th><th>Points</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
               {users.map(user => (
                 <tr key={user._id} style={{ borderBottom: '1px solid #2a2538' }}>
                   <td style={{ padding: '10px' }}>{user.name} <br/><span style={{fontSize:'0.8rem', color:'#b8a9e6'}}>{user.email}</span></td>
-                  <td style={{ padding: '10px' }}>
-                    {user.isBlocked ? <span style={{ color: '#ff4d4d' }}>Blocked</span> : <span style={{ color: '#4caf50' }}>Active</span>}
-                  </td>
-                  <td style={{ padding: '10px', display: 'flex', gap: '5px' }}>
-                    <button onClick={() => handleToggleBlock(user._id)} style={{ background: user.isBlocked ? '#4caf50' : '#ff4d4d', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>
-                      {user.isBlocked ? 'Unblock' : 'Block'}
-                    </button>
-                    <button onClick={() => handleToggleMute(user._id)} style={{ background: user.isChatMuted ? '#ffb300' : '#4a3a5e', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>
-                      {user.isChatMuted ? 'Unmute Chat' : 'Mute Chat'}
-                    </button>
-                  </td>
+                  <td style={{ padding: '10px', color: '#ff2d75' }}>{user.role.toUpperCase()}</td>
+                  <td style={{ padding: '10px', color: '#4caf50' }}>{user.points} pts</td>
+                  <td style={{ padding: '10px' }}>{user.isBlocked ? <span style={{ color: '#ff4d4d' }}>Blocked</span> : <span style={{ color: '#4caf50' }}>Active</span>}</td>
+                  <td style={{ padding: '10px' }}><button onClick={() => handleToggleBlock(user._id)} style={{ background: user.isBlocked ? '#4caf50' : '#ff4d4d', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px' }}>{user.isBlocked ? 'Unblock' : 'Block'}</button></td>
                 </tr>
               ))}
             </tbody>
@@ -139,7 +120,6 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* 3. EVENT MANAGEMENT */}
       {activeTab === 'events' && (
         <div style={styles.section}>
           <form onSubmit={handleAddEvent} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
@@ -148,26 +128,60 @@ const AdminDashboard = () => {
             <input type="text" placeholder="Venue" value={eventData.venue} onChange={e => setEventData({...eventData, venue: e.target.value})} style={styles.input} required />
             <button type="submit" style={{ background: '#ff2d75', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Add Event</button>
           </form>
+          
+          <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>Assign Coordinators</h3>
           {events.map(event => (
             <div key={event._id} style={styles.eventItem}>
-              <div><h4 style={{ margin: 0 }}>{event.image} {event.title}</h4><p style={{ margin: '5px 0 0', fontSize: '0.8rem', color: '#b8a9e6' }}>📅 {event.date} • 📍 {event.venue}</p></div>
-              <button onClick={() => handleDeleteEvent(event._id)} style={{ background: '#ff4d4d', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>Delete</button>
+              <div style={{ flex: 1 }}>
+                <h4 style={{ margin: 0 }}>{event.image} {event.title}</h4>
+                <p style={{ margin: '5px 0 0', fontSize: '0.8rem', color: '#b8a9e6' }}>📅 {event.date} • 📍 {event.venue}</p>
+              </div>
+              
+              {/* Coordinator Assign Dropdown */}
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <select 
+                  onChange={(e) => handleAssignCoordinator(event._id, e.target.value)} 
+                  style={styles.input}
+                  defaultValue=""
+                >
+                  <option value="" disabled>Assign Coordinator</option>
+                  {users.filter(u => u.role === 'coordinator' || u.role === 'volunteer').map(u => (
+                    <option key={u._id} value={u._id}>{u.name} ({u.role})</option>
+                  ))}
+                </select>
+                <button onClick={() => handleDeleteEvent(event._id)} style={{ background: '#ff4d4d', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>Delete</button>
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* 🔥 4. CHAT MODERATION */}
       {activeTab === 'chat' && (
         <div style={styles.section}>
-          <h3 style={{ marginBottom: '15px' }}>💬 Public Chat Moderation</h3>
-          {messages.length === 0 ? <p>No messages yet.</p> : messages.map(msg => (
+          <h3 style={{ marginBottom: '15px' }}>💬 Chat Moderation</h3>
+          {messages.map(msg => (
             <div key={msg._id} style={styles.eventItem}>
-              <div>
-                <p style={{ margin: 0 }}><strong>{msg.user}:</strong> {msg.text}</p>
-                <span style={{ fontSize: '0.7rem', color: '#b8a9e6' }}>{new Date(msg.createdAt).toLocaleString()}</span>
-              </div>
+              <div><strong>{msg.user}:</strong> {msg.text}</div>
               <button onClick={() => handleDeleteMessage(msg._id)} style={{ background: '#ff4d4d', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>Delete</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 🔥 ROLES TAB */}
+      {activeTab === 'roles' && (
+        <div style={styles.section}>
+          <h3 style={{ marginBottom: '15px' }}>🛡️ Role Approval Requests</h3>
+          {users.filter(u => u.roleStatus === 'pending').length === 0 ? <p>No pending requests.</p> : users.filter(u => u.roleStatus === 'pending').map(user => (
+            <div key={user._id} style={styles.eventItem}>
+              <div>
+                <h4 style={{ margin: 0 }}>{user.name} <span style={{fontSize:'0.8rem', color:'#b8a9e6'}}>({user.email})</span></h4>
+                <p style={{ margin: '5px 0 0', color: '#ffb300' }}>Requested: <strong>{user.requestedRole?.toUpperCase()}</strong></p>
+              </div>
+              <div style={{ display: 'flex', gap: '5px' }}>
+                <button onClick={() => handleRoleAction(user._id, 'approve')} style={{ background: '#4caf50', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>Approve</button>
+                <button onClick={() => handleRoleAction(user._id, 'reject')} style={{ background: '#ff4d4d', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>Reject</button>
+              </div>
             </div>
           ))}
         </div>

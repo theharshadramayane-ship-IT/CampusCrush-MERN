@@ -5,8 +5,8 @@ const Navbar = () => {
   const navItems = [
     { path: '/', label: '💘 Discover' },
     { path: '/events', label: '🎉 Events' },
+    { path: '/leaderboard', label: '🏆 Leaderboard' },
     { path: '/profile', label: '👤 Profile' },
-    { path: '/safety', label: '🛡️ Safety' },
   ];
 
   return (
@@ -17,9 +17,9 @@ const Navbar = () => {
         </Link>
         <div style={styles.links}>
           {navItems.map(item => (
-            <Link
-              key={item.path}
-              to={item.path}
+            <Link 
+              key={item.path} 
+              to={item.path} 
               style={{
                 ...styles.link,
                 ...(location.pathname === item.path ? styles.active : {})
@@ -28,6 +28,8 @@ const Navbar = () => {
               {item.label}
             </Link>
           ))}
+          {/* Staff Login Button */}
+          <Link to="/staff-login" style={styles.staffBtn}>🛡️ Staff Login</Link>
         </div>
       </div>
     </nav>
@@ -40,7 +42,8 @@ const styles = {
   logo: { fontSize: '1.3rem', fontWeight: 'bold', textDecoration: 'none', color: 'white' },
   links: { display: 'flex', gap: '20px', alignItems: 'center' },
   link: { textDecoration: 'none', color: '#e0d4ff', fontSize: '0.95rem' },
-  active: { color: '#ff2d75', fontWeight: 'bold' }
+  active: { color: '#ff2d75', fontWeight: 'bold' },
+  staffBtn: { background: 'transparent', border: '1px solid #ffb300', color: '#ffb300', padding: '8px 15px', borderRadius: '20px', textDecoration: 'none', fontSize: '0.9rem' }
 };
 
 export default Navbar;

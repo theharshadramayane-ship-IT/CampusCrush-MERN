@@ -1,6 +1,6 @@
 const User = require('../models/User');
 
-// Leaderboard (Top Students)
+// 🔥 1. Leaderboard (Top Students by Points)
 const getLeaderboard = async (req, res) => {
   try {
     const users = await User.find({ role: 'student' })
@@ -8,10 +8,12 @@ const getLeaderboard = async (req, res) => {
       .limit(10)
       .select('name branch points certificates');
     res.json(users);
-  } catch (error) { res.status(500).json({ error: error.message }); }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Apply for Role
+// 🔥 2. Apply for Role (Student se Coordinator/GS banne ke liye)
 const applyForRole = async (req, res) => {
   try {
     const { email, requestedRole } = req.body;
@@ -19,22 +21,27 @@ const applyForRole = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found' });
     if (user.role !== 'student') return res.status(400).json({ error: 'You already have a role' });
+    if (user.roleStatus === 'pending') return res.status(400).json({ error: 'Request already pending' });
 
     user.requestedRole = requestedRole;
     user.roleStatus = 'pending';
     await user.save();
 
-    res.json({ success: true, message: 'Request sent to Admin!' });
-  } catch (error) { res.status(500).json({ error: error.message }); }
+    res.json({ success: true, message: 'Request sent to Admin successfully!' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// 🔥 NAYA: Profile Fetch Karne Ke Liye (Email se)
+// 🔥 3. Get User Profile by Email (Profile page ke liye)
 const getUserProfile = async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email }).select('-password');
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
-  } catch (error) { res.status(500).json({ error: error.message }); }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 module.exports = { getLeaderboard, applyForRole, getUserProfile };

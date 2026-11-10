@@ -1,25 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext'; // Agar context hai, warna skip karo
+import axios from 'axios';
 
 const Profile = () => {
-  // Abhi ke liye hum fake data dikha rahe hain
-  const [user] = useState({
-    name: 'Guest User',
-    age: 21,
-    branch: 'Computer Science',
-    bio: 'Just a guest exploring CampusCrush!'
-  });
+  // Abhi ke liye hum local storage se email nikal rahe hain (jo login karte waqt save hui thi)
+  // Agar aapke paas login system nahi hai, toh ek dummy email use karein:
+  const userEmail = localStorage.getItem('userEmail') || 'admin@campuscrusher.com'; 
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/users/profile/${userEmail}`);
+        setUser(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, [userEmail]);
+
+  if (loading) return <div style={{ textAlign: 'center', paddingTop: '100px' }}>Loading Profile...</div>;
+  if (!user) return <div style={{ textAlign: 'center', paddingTop: '100px' }}>User not found</div>;
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', paddingTop: '80px' }}>
-      <div style={{ background: '#1e1a2f', padding: '40px', borderRadius: '30px', textAlign: 'center', width: '400px' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', paddingTop: '80px', paddingBottom: '50px' }}>
+      <div style={{ background: '#1e1a2f', padding: '40px', borderRadius: '30px', textAlign: 'center', width: '450px' }}>
         <div style={{ fontSize: '6rem', marginBottom: '20px' }}>👤</div>
         <h2>{user.name}, {user.age}</h2>
-        <p style={{ color: '#b8a9e6', marginBottom: '10px' }}>🎓 {user.branch}</p>
-        <p style={{ marginBottom: '25px', color: '#e0d4ff' }}>📝 {user.bio}</p>
+        <p style={{ color: '#b8a9e6', marginBottom: '5px' }}>🎓 {user.branch}</p>
+        <p style={{ color: '#ffb300', marginBottom: '15px', fontWeight: 'bold' }}>Role: {user.role.toUpperCase()}</p>
         
-        <button onClick={() => alert('Guest account mein edit nahi hota!')} style={{ background: '#ff2d75', border: 'none', padding: '12px 30px', borderRadius: '25px', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>
-          ✏️ Edit Profile
-        </button>
+        <div style={{ background: '#2a2538', padding: '15px', borderRadius: '15px', marginBottom: '25px' }}>
+          <h3 style={{ color: '#4caf50', margin: 0 }}>{user.points} Points</h3>
+          <p style={{ fontSize: '0.8rem', color: '#b8a9e6', margin: '5px 0 0' }}>Keep contributing to earn more!</p>
+        </div>
+
+        <h3 style={{ textAlign: 'left', marginBottom: '10px' }}>🏅 My Certificates</h3>
+        {user.certificates?.length === 0 ? (
+          <p style={{ textAlign: 'left', color: '#b8a9e6', fontSize: '0.9rem' }}>No certificates yet. Participate in events!</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {user.certificates?.map((cert, i) => (
+              <div key={i} style={{ background: '#2a2538', padding: '15px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', borderLeft: '4px solid #ffb300' }}>
+                <span>🎓 {cert.title}</span>
+                <span style={{ fontSize: '0.8rem', color: '#b8a9e6' }}>{new Date(cert.date).toLocaleDateString()}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

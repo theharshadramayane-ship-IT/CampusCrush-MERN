@@ -4,9 +4,10 @@ import Discover from './pages/Discover';
 import Events from './pages/Events';
 import Profile from './pages/Profile';
 import Safety from './pages/Safety';
-import Admin from './pages/Admin'; 
-import AdminLogin from './pages/AdminLogin'; // 👈 Naya
-import AdminDashboard from './pages/AdminDashboard'; // 👈 Naya
+import AdminLogin from './pages/AdminLogin'; 
+import AdminDashboard from './pages/AdminDashboard'; 
+import Leaderboard from './pages/Leaderboard'; 
+import StaffLogin from './pages/StaffLogin'; 
 import FloatingChat from './components/FloatingChat';
 
 function App() {
@@ -23,9 +24,10 @@ function App() {
         <Route path="/events" element={<Events />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/safety" element={<Safety />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/staff-login" element={<StaffLogin />} />
         
         {/* Admin Routes */}
-        <Route path="/admin" element={<Admin />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
