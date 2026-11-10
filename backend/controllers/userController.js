@@ -1,33 +1,31 @@
 const User = require('../models/User');
 
-const getDiscoverUsers = async (req, res) => {
+// 🔥 NAYA: Leaderboard (Top Students by Points)
+const getLeaderboard = async (req, res) => {
   try {
-    const users = await User.find({ _id: { $ne: req.user._id } }).select('-password');
+    const users = await User.find({ role: 'student' })
+      .sort({ points: -1 })
+      .limit(10)
+      .select('name branch points certificates');
     res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
-const getProfile = async (req, res) => {
+// 🔥 NAYA: Apply for a Role (GS, Secretary, etc.)
+const applyForRole = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+    const { email, requestedRole } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.role !== 'student') return res.status(400).json({ error: 'You already have a role' });
+
+    user.requestedRole = requestedRole;
+    user.roleStatus = 'pending';
+    await user.save();
+
+    res.json({ success: true, message: 'Request sent to Admin!' });
+  } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
-const updateProfile = async (req, res) => {
-  try {
-    const { name, age, bio, interests } = req.body;
-    const user = await User.findByIdAndUpdate(
-      req.user._id, { name, age, bio, interests }, { new: true }
-    ).select('-password');
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-module.exports = { getDiscoverUsers, getProfile, updateProfile };
+module.exports = { getLeaderboard, applyForRole };

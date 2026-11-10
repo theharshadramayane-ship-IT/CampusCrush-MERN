@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { getDiscoverUsers, getProfile, updateProfile } = require('../controllers/userController');
-const { protect } = require('../middleware/auth');
+const { getLeaderboard, applyForRole } = require('../controllers/userController');
 
-router.get('/discover', protect, getDiscoverUsers);
-router.get('/profile', protect, getProfile);
-router.put('/profile', protect, updateProfile);
+router.get('/leaderboard', getLeaderboard);
+router.post('/apply-role', applyForRole);
 
 module.exports = router;

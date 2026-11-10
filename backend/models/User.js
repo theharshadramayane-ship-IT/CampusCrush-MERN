@@ -8,9 +8,22 @@ const userSchema = new mongoose.Schema({
   gender: { type: String, enum: ['Boy', 'Girl'], required: true },
   branch: { type: String, required: true },
   age: { type: Number, required: true },
-  role: { type: String, enum: ['student', 'admin'], default: 'student' },
+  
+  // 🔥 NAYE ROLES
+  role: { 
+    type: String, 
+    enum: ['student', 'admin', 'gs', 'secretary', 'coordinator', 'volunteer'], 
+    default: 'student' 
+  },
+  requestedRole: { type: String, default: null },
+  roleStatus: { type: String, enum: ['none', 'pending', 'approved', 'rejected'], default: 'none' },
+  
+  // 🔥 POINTS & CERTIFICATES
+  points: { type: Number, default: 0 },
+  certificates: [{ title: String, date: { type: Date, default: Date.now } }],
+
   isBlocked: { type: Boolean, default: false },
-  isChatMuted: { type: Boolean, default: false }, // 👈 Ye line schema ke andar honi chahiye
+  isChatMuted: { type: Boolean, default: false },
   bio: { type: String, default: '' },
   profilePhoto: { type: String, default: '👤' },
   online: { type: Boolean, default: false }

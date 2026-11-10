@@ -5,7 +5,8 @@ const eventSchema = new mongoose.Schema({
   date: { type: String, required: true },
   venue: { type: String, required: true },
   image: { type: String, default: '🎉' },
-  attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] // Kis-kis ne join kiya
+  attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  coordinators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] // 🔥 Naya
 }, { timestamps: true });
 
 module.exports = mongoose.model('Event', eventSchema);

@@ -30,6 +30,7 @@ app.set('io', io);
 // 🔥 SAARE ROUTES
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/events', require('./routes/events'));
+app.use('/api/users', require('./routes/users')); 
 
 app.get('/', (req, res) => res.send('CampusCrush Full Stack Server is running!'));
 
