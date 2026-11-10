@@ -1,48 +1,49 @@
 const Event = require('../models/Event');
 
+// Saare events laao
 const getEvents = async (req, res) => {
   try {
-    const events = await Event.find().populate('attendees', 'name');
+    const events = await Event.find().sort({ createdAt: -1 });
     res.json(events);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-const joinEvent = async (req, res) => {
+// Naya event banao (Sirf Admin)
+const createEvent = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
-    if (!event) return res.status(404).json({ error: 'Event not found' });
-
-    if (event.attendees.includes(req.user._id)) {
-      return res.status(400).json({ error: 'Already joined' });
-    }
-
-    event.attendees.push(req.user._id);
-    await event.save();
-    res.json({ success: true, message: 'Joined event! 🎉' });
+    const { title, date, venue, image } = req.body;
+    const newEvent = await Event.create({ title, date, venue, image });
+    res.status(201).json(newEvent);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Sample Events Create Karne Ke Liye
-const createSampleEvents = async (req, res) => {
+// Event delete karo (Sirf Admin)
+const deleteEvent = async (req, res) => {
   try {
-    const sampleEvents = [
-      { title: '🎨 Freshers Party', category: 'Party', date: 'Aug 15', time: '7 PM', venue: 'Auditorium', spots: 50, image: '🎉' },
-      { title: '💻 Hackathon', category: 'Tech', date: 'Aug 20', time: '9 AM', venue: 'CS Dept', spots: 20, image: '💻' },
-      { title: '🎵 Open Mic', category: 'Music', date: 'Aug 22', time: '6 PM', venue: 'Cafeteria', spots: 30, image: '🎤' }
-    ];
-
-    for (const e of sampleEvents) {
-      const exists = await Event.findOne({ title: e.title });
-      if (!exists) await Event.create(e);
-    }
-    res.json({ message: 'Sample events created!' });
+    await Event.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Event deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-module.exports = { getEvents, joinEvent, createSampleEvents };
+// Event update/edit karo (Sirf Admin)
+const updateEvent = async (req, res) => {
+  try {
+    const { title, date, venue, image } = req.body;
+    const event = await Event.findByIdAndUpdate(
+      req.params.id, 
+      { title, date, venue, image }, 
+      { new: true }
+    );
+    res.json(event);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { getEvents, createEvent, deleteEvent, updateEvent };

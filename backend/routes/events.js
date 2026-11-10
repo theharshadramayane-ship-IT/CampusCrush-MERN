@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getEvents, joinEvent, createSampleEvents } = require('../controllers/eventController');
+const { getEvents, createEvent, deleteEvent, updateEvent } = require('../controllers/eventController');
 const { protect } = require('../middleware/auth');
 
-router.get('/', protect, getEvents);
-router.post('/:id/join', protect, joinEvent);
-router.post('/create-sample', protect, createSampleEvents);
+// Sab log events dekh sakte hain
+router.get('/', getEvents);
+
+// Sirf logged-in admin events add/delete/edit kar sakta hai
+router.post('/', protect, createEvent);
+router.delete('/:id', protect, deleteEvent);
+router.put('/:id', protect, updateEvent);
 
 module.exports = router;
