@@ -8,8 +8,9 @@ const userSchema = new mongoose.Schema({
   gender: { type: String, enum: ['Boy', 'Girl'], required: true },
   branch: { type: String, required: true },
   age: { type: Number, required: true },
-  role: { type: String, enum: ['student', 'admin'], default: 'student' }, // 👈 Naya
-  isBlocked: { type: Boolean, default: false }, // 👈 Naya (Ban feature ke liye)
+  role: { type: String, enum: ['student', 'admin'], default: 'student' },
+  isBlocked: { type: Boolean, default: false },
+  isChatMuted: { type: Boolean, default: false }, // 👈 Ye line schema ke andar honi chahiye
   bio: { type: String, default: '' },
   profilePhoto: { type: String, default: '👤' },
   online: { type: Boolean, default: false }
@@ -26,5 +27,3 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
 };
 
 module.exports = mongoose.model('User', userSchema);
-// User Schema mein 'isBlocked' ke niche ye line add karo:
-isChatMuted: { type: Boolean, default: false },
