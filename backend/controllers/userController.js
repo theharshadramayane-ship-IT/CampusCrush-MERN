@@ -1,6 +1,6 @@
 const User = require('../models/User');
 
-// 🔥 NAYA: Leaderboard (Top Students by Points)
+// Leaderboard (Top Students)
 const getLeaderboard = async (req, res) => {
   try {
     const users = await User.find({ role: 'student' })
@@ -11,7 +11,7 @@ const getLeaderboard = async (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
-// 🔥 NAYA: Apply for a Role (GS, Secretary, etc.)
+// Apply for Role
 const applyForRole = async (req, res) => {
   try {
     const { email, requestedRole } = req.body;
@@ -28,4 +28,13 @@ const applyForRole = async (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
-module.exports = { getLeaderboard, applyForRole };
+// 🔥 NAYA: Profile Fetch Karne Ke Liye (Email se)
+const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email }).select('-password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+};
+
+module.exports = { getLeaderboard, applyForRole, getUserProfile };
