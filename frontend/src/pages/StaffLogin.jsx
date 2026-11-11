@@ -6,10 +6,13 @@ const StaffLogin = () => {
   const [role, setRole] = useState('coordinator');
   const [message, setMessage] = useState('');
 
+  // 👇 API URL variable
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const handleApply = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/users/apply-role', { email, requestedRole: role });
+      const res = await axios.post(`${API_URL}/api/users/apply-role`, { email, requestedRole: role });
       setMessage(res.data.message);
       setEmail('');
     } catch (err) {

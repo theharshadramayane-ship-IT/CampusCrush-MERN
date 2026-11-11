@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext'; // Agar context hai, warna skip karo
 import axios from 'axios';
 
 const Profile = () => {
-  // Abhi ke liye hum local storage se email nikal rahe hain (jo login karte waqt save hui thi)
-  // Agar aapke paas login system nahi hai, toh ek dummy email use karein:
   const userEmail = localStorage.getItem('userEmail') || 'admin@campuscrusher.com'; 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // 👇 API URL variable
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/users/profile/${userEmail}`);
+        const res = await axios.get(`${API_URL}/api/users/profile/${userEmail}`);
         setUser(res.data);
       } catch (err) {
         console.error(err);
@@ -21,7 +21,7 @@ const Profile = () => {
       }
     };
     fetchUser();
-  }, [userEmail]);
+  }, [userEmail, API_URL]);
 
   if (loading) return <div style={{ textAlign: 'center', paddingTop: '100px' }}>Loading Profile...</div>;
   if (!user) return <div style={{ textAlign: 'center', paddingTop: '100px' }}>User not found</div>;

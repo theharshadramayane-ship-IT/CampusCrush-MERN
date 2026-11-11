@@ -11,6 +11,9 @@ const AdminDashboard = () => {
   const [eventData, setEventData] = useState({ title: '', date: '', venue: '', image: '🎉' });
   const navigate = useNavigate();
 
+  // 👇 API URL variable
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const token = localStorage.getItem('adminToken');
   if (!token) navigate('/admin-login');
 
@@ -19,10 +22,10 @@ const AdminDashboard = () => {
       try {
         const headers = { Authorization: `Bearer ${token}` };
         const [usersRes, eventsRes, messagesRes, analyticsRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/admin/users', { headers }),
-          axios.get('http://localhost:5000/api/events'),
-          axios.get('http://localhost:5000/api/admin/messages', { headers }),
-          axios.get('http://localhost:5000/api/admin/analytics', { headers })
+          axios.get(`${API_URL}/api/admin/users`, { headers }),
+          axios.get(`${API_URL}/api/events`),
+          axios.get(`${API_URL}/api/admin/messages`, { headers }),
+          axios.get(`${API_URL}/api/admin/analytics`, { headers })
         ]);
         setUsers(usersRes.data);
         setEvents(eventsRes.data);
@@ -33,51 +36,52 @@ const AdminDashboard = () => {
       }
     };
     fetchData();
-  }, [token, navigate]);
+  }, [token, navigate, API_URL]);
 
   const handleToggleBlock = async (userId) => {
-    await axios.put(`http://localhost:5000/api/admin/block/${userId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    await axios.put(`${API_URL}/api/admin/block/${userId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
     setUsers(users.map(u => u._id === userId ? { ...u, isBlocked: !u.isBlocked } : u));
   };
 
   const handleRoleAction = async (userId, action) => {
-    await axios.post('http://localhost:5000/api/admin/role-request', { userId, action }, { headers: { Authorization: `Bearer ${token}` } });
+    await axios.post(`${API_URL}/api/admin/role-request`, { userId, action }, { headers: { Authorization: `Bearer ${token}` } });
     alert(`Role ${action}d!`);
     window.location.reload();
   };
 
   const handleAddEvent = async (e) => {
     e.preventDefault();
-    const res = await axios.post('http://localhost:5000/api/events', eventData, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await axios.post(`${API_URL}/api/events`, eventData, { headers: { Authorization: `Bearer ${token}` } });
     setEvents([res.data, ...events]);
     setEventData({ title: '', date: '', venue: '', image: '🎉' });
   };
 
   const handleDeleteEvent = async (id) => {
     if (window.confirm('Delete?')) {
-      await axios.delete(`http://localhost:5000/api/events/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`${API_URL}/api/events/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setEvents(events.filter(e => e._id !== id));
     }
   };
 
   const handleDeleteMessage = async (id) => {
     if (window.confirm('Delete message?')) {
-      await axios.delete(`http://localhost:5000/api/admin/messages/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`${API_URL}/api/admin/messages/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setMessages(messages.filter(m => m._id !== id));
     }
   };
 
-  // 🔥 NAYA FUNCTION: Coordinator Assign Karna
   const handleAssignCoordinator = async (eventId, userId) => {
     if (!userId) return;
     try {
-      await axios.post('http://localhost:5000/api/admin/assign-coordinator', { eventId, userId }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post(`${API_URL}/api/admin/assign-coordinator`, { eventId, userId }, { headers: { Authorization: `Bearer ${token}` } });
       alert('✅ Coordinator Assigned successfully!');
     } catch (err) { 
       alert('Failed to assign coordinator'); 
     }
   };
 
+  // ... baaki return mein same JSX rahega ...
+  
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', paddingTop: '80px', paddingBottom: '50px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
@@ -136,14 +140,8 @@ const AdminDashboard = () => {
                 <h4 style={{ margin: 0 }}>{event.image} {event.title}</h4>
                 <p style={{ margin: '5px 0 0', fontSize: '0.8rem', color: '#b8a9e6' }}>📅 {event.date} • 📍 {event.venue}</p>
               </div>
-              
-              {/* Coordinator Assign Dropdown */}
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <select 
-                  onChange={(e) => handleAssignCoordinator(event._id, e.target.value)} 
-                  style={styles.input}
-                  defaultValue=""
-                >
+                <select onChange={(e) => handleAssignCoordinator(event._id, e.target.value)} style={styles.input} defaultValue="">
                   <option value="" disabled>Assign Coordinator</option>
                   {users.filter(u => u.role === 'coordinator' || u.role === 'volunteer').map(u => (
                     <option key={u._id} value={u._id}>{u.name} ({u.role})</option>
@@ -168,7 +166,6 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* 🔥 ROLES TAB */}
       {activeTab === 'roles' && (
         <div style={styles.section}>
           <h3 style={{ marginBottom: '15px' }}>🛡️ Role Approval Requests</h3>

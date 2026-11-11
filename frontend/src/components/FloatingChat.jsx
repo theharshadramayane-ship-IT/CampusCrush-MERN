@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:5000');
-
 const FloatingChat = () => {
+  // 👇 API URL variable
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  
+  // Socket connection variable ke saath
+  const socket = io(API_URL);
+
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState(localStorage.getItem('guestName') || '');
   const [isJoined, setIsJoined] = useState(!!username);
@@ -16,7 +20,7 @@ const FloatingChat = () => {
       setChat((prev) => [...prev, data]);
     });
     return () => socket.off('receive_public_message');
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
     if (isOpen) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -40,7 +44,6 @@ const FloatingChat = () => {
 
   return (
     <div style={styles.container}>
-      {/* Chat Window (Popup) */}
       {isOpen && (
         <div style={styles.chatWindow}>
           <div style={styles.header}>
@@ -76,11 +79,8 @@ const FloatingChat = () => {
         </div>
       )}
 
-      {/* Floating Button */}
       {!isOpen && (
-        <button onClick={() => setIsOpen(true)} style={styles.floatingBtn}>
-          💬
-        </button>
+        <button onClick={() => setIsOpen(true)} style={styles.floatingBtn}>💬</button>
       )}
     </div>
   );

@@ -3,16 +3,19 @@ import axios from 'axios';
 
 const Leaderboard = () => {
   const [users, setUsers] = useState([]);
+  
+  // 👇 API URL variable
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/users/leaderboard');
+        const res = await axios.get(`${API_URL}/api/users/leaderboard`);
         setUsers(res.data);
       } catch (err) { console.error(err); }
     };
     fetchLeaderboard();
-  }, []);
+  }, [API_URL]);
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '100px', paddingBottom: '50px' }}>
@@ -20,7 +23,7 @@ const Leaderboard = () => {
       <p style={{ textAlign: 'center', color: '#b8a9e6', marginBottom: '40px' }}>Top contributors of CampusCrush</p>
 
       <div style={{ background: '#1e1a2f', borderRadius: '20px', padding: '20px', border: '1px solid #3a2e4d' }}>
-        {users.map((user, index) => (
+        {users.length === 0 ? <p style={{ textAlign: 'center', color: '#b8a9e6' }}>No data yet.</p> : users.map((user, index) => (
           <div key={user._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', borderBottom: index !== users.length - 1 ? '1px solid #2a2538' : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <h2 style={{ margin: 0, color: index === 0 ? '#ffd700' : index === 1 ? '#c0c0c0' : index === 2 ? '#cd7f32' : '#b8a9e6' }}>
@@ -34,7 +37,7 @@ const Leaderboard = () => {
             <div style={{ textAlign: 'right' }}>
               <h3 style={{ margin: 0, color: '#4caf50' }}>{user.points} pts</h3>
               <span style={{ fontSize: '0.8rem', color: '#ffb300' }}>
-                🎓 {user.certificates.length} Certificates
+                🎓 {user.certificates?.length || 0} Certificates
               </span>
             </div>
           </div>

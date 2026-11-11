@@ -5,10 +5,13 @@ const Events = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // 👇 API URL variable
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/events');
+        const res = await axios.get(`${API_URL}/api/events`);
         setEvents(res.data);
       } catch (err) {
         console.error('Failed to fetch events', err);
@@ -17,7 +20,7 @@ const Events = () => {
       }
     };
     fetchEvents();
-  }, []);
+  }, [API_URL]);
 
   if (loading) return <div style={{ textAlign: 'center', paddingTop: '100px' }}>Loading events...</div>;
 

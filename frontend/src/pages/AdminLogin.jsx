@@ -8,10 +8,13 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // 👇 API URL variable
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/admin/login', { email, password });
+      const res = await axios.post(`${API_URL}/api/admin/login`, { email, password });
       localStorage.setItem('adminToken', res.data.token);
       navigate('/admin-dashboard');
     } catch (err) {
@@ -29,9 +32,6 @@ const AdminLogin = () => {
           {error && <p style={{ color: '#ff6b9d', textAlign: 'center' }}>{error}</p>}
           <button type="submit" style={styles.btn}>Login →</button>
         </form>
-        <p style={{ textAlign: 'center', marginTop: '15px', fontSize: '0.8rem', color: '#b8a9e6' }}>
-          Demo: admin@campuscrusher.com / admin123
-        </p>
       </div>
     </div>
   );
